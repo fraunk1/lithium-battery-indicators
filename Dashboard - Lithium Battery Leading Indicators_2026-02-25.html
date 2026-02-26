@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lithium Battery Leading Indicators — Executive Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0a0e17;
+    --bg-secondary: #111827;
+    --bg-card: #151d2e;
+    --bg-card-hover: #1a2540;
+    --border: #1e293b;
+    --border-light: #2a3a52;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --red: #ef4444;
+    --red-bg: rgba(239,68,68,0.12);
+    --red-border: rgba(239,68,68,0.3);
+    --orange: #f97316;
+    --orange-bg: rgba(249,115,22,0.12);
+    --orange-border: rgba(249,115,22,0.3);
+    --yellow: #eab308;
+    --yellow-bg: rgba(234,179,8,0.10);
+    --yellow-border: rgba(234,179,8,0.25);
+    --green: #22c55e;
+    --green-bg: rgba(34,197,94,0.10);
+    --green-border: rgba(34,197,94,0.25);
+    --blue: #3b82f6;
+    --blue-bg: rgba(59,130,246,0.12);
+    --cyan: #06b6d4;
+    --accent: #818cf8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    background: linear-gradient(135deg, #0f172a 0%, #1a1040 50%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
+  }
+  .header-left { position: relative; z-index: 1; }
+  .header-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--text-primary);
+  }
+  .header-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-weight: 400;
+  }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+    z-index: 1;
+  }
+  .header-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: right;
+  }
+  .header-date span { color: var(--text-secondary); }
+
+  /* ─── THREAT POSTURE BADGE ─── */
+  .threat-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--orange-bg);
+    border: 1px solid var(--orange-border);
+    border-radius: 10px;
+    padding: 10px 20px;
+    animation: pulse-orange 3s ease-in-out infinite;
+  }
+  @keyframes pulse-orange {
+    0%, 100% { box-shadow: 0 0 20px rgba(249,115,22,0.1); }
+    50% { box-shadow: 0 0 30px rgba(249,115,22,0.25); }
+  }
+  .threat-dot {
+    width: 14px; height: 14px;
+    background: var(--orange);
+    border-radius: 50%;
+    animation: blink 2s ease-in-out infinite;
+    box-shadow: 0 0 8px var(--orange);
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .threat-label {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--orange);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  /* ─── MAIN GRID ─── */
+  .dashboard {
+    padding: 24px 40px 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  /* ─── CARDS ─── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--border-light); }
+  .card-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title .icon {
+    width: 16px; height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ─── STAT CARDS (top row) ─── */
+  .stat-row {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+  }
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .stat-card.red::after { background: var(--red); }
+  .stat-card.orange::after { background: var(--orange); }
+  .stat-card.yellow::after { background: var(--yellow); }
+  .stat-card.blue::after { background: var(--blue); }
+  .stat-card.green::after { background: var(--green); }
+  .stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .stat-value.red { color: var(--red); }
+  .stat-value.orange { color: var(--orange); }
+  .stat-value.blue { color: var(--blue); }
+  .stat-value.green { color: var(--green); }
+  .stat-detail {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+  .stat-detail .up { color: var(--red); }
+  .stat-detail .down { color: var(--green); }
+  .stat-detail .neutral { color: var(--text-secondary); }
+
+  /* ─── TOP INDICATORS (3-column alert strip) ─── */
+  .alert-strip {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .alert-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .alert-card.border-red { border: 1px solid var(--red-border); }
+  .alert-card.border-orange { border: 1px solid var(--orange-border); }
+  .alert-card .alert-num {
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+  .alert-card h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .alert-card h3.red { color: var(--red); }
+  .alert-card h3.orange { color: var(--orange); }
+  .alert-card p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .alert-card .trend-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-top: 8px;
+  }
+  .trend-tag.rising { background: var(--red-bg); color: var(--red); }
+  .trend-tag.stable { background: var(--yellow-bg); color: var(--yellow); }
+
+  /* ─── THREAT MATRIX (left column, spans 2 rows) ─── */
+  .threat-matrix { grid-column: 1 / 3; grid-row: span 2; }
+  .matrix-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 12px;
+  }
+  .matrix-table th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    padding: 8px 10px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg-card);
+  }
+  .matrix-table th:first-child { text-align: left; }
+  .matrix-table td {
+    padding: 9px 10px;
+    border-bottom: 1px solid rgba(30,41,59,0.5);
+    text-align: center;
+    vertical-align: middle;
+  }
+  .matrix-table td:first-child {
+    text-align: left;
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--text-primary);
+    white-space: nowrap;
+  }
+  .matrix-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .matrix-table .tier-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 12px 10px 6px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Signal dots */
+  .sig {
+    display: inline-block;
+    width: 22px; height: 22px;
+    border-radius: 5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 22px;
+    text-align: center;
+  }
+  .sig.H { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+  .sig.M { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange-border); }
+  .sig.L { background: var(--yellow-bg); color: var(--yellow); border: 1px solid var(--yellow-border); }
+  .sig.W { background: rgba(34,197,94,0.06); color: var(--green); border: 1px solid var(--green-border); }
+
+  /* Overall posture pill */
+  .posture {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+  .posture.red { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+  .posture.orange { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange-border); }
+  .posture.yellow { background: var(--yellow-bg); color: var(--yellow); border: 1px solid var(--yellow-border); }
+  .posture.green { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+
+  /* ─── REGULATORY GAPS (right column) ─── */
+  .gap-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(30,41,59,0.5);
+  }
+  .gap-item:last-child { border-bottom: none; }
+  .gap-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 14px;
+  }
+  .gap-icon.red { background: var(--red-bg); }
+  .gap-icon.orange { background: var(--orange-bg); }
+  .gap-icon.yellow { background: var(--yellow-bg); }
+  .gap-content h4 {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 3px;
+  }
+  .gap-content p {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+
+  /* ─── PRICE COLLAPSE TABLE ─── */
+  .price-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 12px;
+  }
+  .price-table th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    padding: 8px 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .price-table td {
+    padding: 8px 8px;
+    border-bottom: 1px solid rgba(30,41,59,0.5);
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .price-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .price-drop {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    color: var(--red);
+  }
+  .price-floor {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .price-floor.breached { background: var(--red-bg); color: var(--red); }
+  .price-floor.ok { background: var(--green-bg); color: var(--green); }
+
+  /* ─── EMERGING PRODUCTS ─── */
+  .emerging-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .emerging-item {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.01);
+    transition: background 0.2s;
+  }
+  .emerging-item:hover { background: rgba(255,255,255,0.03); }
+  .emerging-item .em-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .emerging-item h4 {
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .emerging-item .em-wh {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+  .emerging-item .em-reason {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+  .emerging-item .em-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .em-tag.gap { background: var(--red-bg); color: var(--red); }
+  .em-tag.new-chem { background: rgba(139,92,246,0.15); color: #a78bfa; }
+  .em-tag.prohibited { background: var(--orange-bg); color: var(--orange); }
+  .em-tag.monitor { background: var(--yellow-bg); color: var(--yellow); }
+  .em-tag.low { background: var(--green-bg); color: var(--green); }
+
+  /* ─── INCIDENT TREND CHART ─── */
+  .chart-area {
+    position: relative;
+    height: 180px;
+    margin-top: 10px;
+  }
+  .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 150px;
+    padding: 0 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .bar-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    gap: 4px;
+  }
+  .bar {
+    width: 70%;
+    max-width: 40px;
+    border-radius: 4px 4px 0 0;
+    transition: height 1s ease-out;
+    position: relative;
+    min-height: 2px;
+  }
+  .bar.red-bar { background: linear-gradient(to top, rgba(239,68,68,0.6), var(--red)); }
+  .bar.orange-bar { background: linear-gradient(to top, rgba(249,115,22,0.4), var(--orange)); }
+  .bar.blue-bar { background: linear-gradient(to top, rgba(59,130,246,0.4), var(--blue)); }
+  .bar-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+  .bar-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+
+  /* ─── DEVICE BREAKDOWN ─── */
+  .device-bars { margin-top: 4px; }
+  .device-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+  }
+  .device-name {
+    font-size: 12px;
+    width: 110px;
+    flex-shrink: 0;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .device-bar-track {
+    flex: 1;
+    height: 18px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+  }
+  .device-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 1.2s ease-out;
+    display: flex;
+    align-items: center;
+    padding-left: 8px;
+  }
+  .device-bar-fill span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+
+  /* ─── BANNED ITEMS ─── */
+  .banned-list { list-style: none; }
+  .banned-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(30,41,59,0.5);
+    font-size: 13px;
+  }
+  .banned-list li:last-child { border-bottom: none; }
+  .banned-icon {
+    width: 28px; height: 28px;
+    background: var(--red-bg);
+    border: 1px solid var(--red-border);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .banned-detail {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  /* ─── SEASONAL CALENDAR ─── */
+  .season-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 4px;
+    margin-top: 8px;
+  }
+  .season-cell {
+    text-align: center;
+    padding: 8px 2px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .season-cell .month {
+    display: block;
+    font-size: 9px;
+    color: var(--text-muted);
+    margin-bottom: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .season-cell.s-high { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+  .season-cell.s-mod-high { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange-border); }
+  .season-cell.s-mod { background: var(--yellow-bg); color: var(--yellow); border: 1px solid var(--yellow-border); }
+  .season-cell.s-highest { background: rgba(239,68,68,0.22); color: var(--red); border: 1px solid rgba(239,68,68,0.5); font-weight: 700; }
+
+  /* ─── WIDE CARDS ─── */
+  .full-width { grid-column: 1 / -1; }
+  .two-col { grid-column: span 2; }
+
+  /* ─── COMPLIANCE GAMING ─── */
+  .gaming-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+  }
+  .gaming-track {
+    flex: 1;
+    height: 28px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 6px;
+    position: relative;
+    overflow: visible;
+  }
+  .gaming-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--blue), var(--orange));
+    border-radius: 6px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+  }
+  .gaming-fill span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+  }
+  .gaming-threshold {
+    position: absolute;
+    top: -6px;
+    bottom: -6px;
+    width: 2px;
+    background: var(--red);
+    z-index: 2;
+  }
+  .gaming-threshold::after {
+    content: '100 Wh';
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--red);
+    white-space: nowrap;
+  }
+
+  /* ─── ACTION ITEMS ─── */
+  .action-list { list-style: none; }
+  .action-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(30,41,59,0.5);
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .action-list li:last-child { border-bottom: none; }
+  .action-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+    width: 20px;
+  }
+  .action-text {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+  .action-text strong { color: var(--text-primary); font-weight: 600; }
+
+  /* ─── FOOTER ─── */
+  .footer {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 16px;
+    font-size: 11px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+  }
+  .footer span { color: var(--text-secondary); }
+
+  /* ─── ANIMATIONS ─── */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+  @keyframes fadeIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-in:nth-child(1) { animation-delay: 0.05s; }
+  .fade-in:nth-child(2) { animation-delay: 0.1s; }
+  .fade-in:nth-child(3) { animation-delay: 0.15s; }
+  .fade-in:nth-child(4) { animation-delay: 0.2s; }
+  .fade-in:nth-child(5) { animation-delay: 0.25s; }
+
+  /* ─── CITATION LINKS ─── */
+  a.cite {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--accent);
+    text-decoration: none;
+    vertical-align: super;
+    padding: 0 1px;
+    border-radius: 2px;
+    transition: color 0.15s, background 0.15s;
+  }
+  a.cite:hover {
+    color: #c4b5fd;
+    background: rgba(129,140,248,0.15);
+    text-decoration: underline;
+  }
+  .card-sources {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(30,41,59,0.5);
+    font-size: 10px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .card-sources a {
+    color: var(--accent);
+    text-decoration: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+  }
+  .card-sources a:hover {
+    text-decoration: underline;
+    color: #c4b5fd;
+  }
+  .sources-panel {
+    grid-column: 1 / -1;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .sources-panel .card-title { margin-bottom: 12px; }
+  .sources-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px 24px;
+  }
+  .source-item {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    padding: 6px 0;
+  }
+  .source-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+    width: 18px;
+  }
+  .source-detail {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+  .source-detail a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 10px;
+  }
+  .source-detail a:hover { text-decoration: underline; color: #c4b5fd; }
+  .source-detail .source-name { font-weight: 500; color: var(--text-primary); }
+</style>
+</head>
+<body>
+
+<!-- ═══════ HEADER ═══════ -->
+<div class="header">
+  <div class="header-left">
+    <div class="header-title">Lithium Battery Leading Indicators</div>
+    <div class="header-subtitle">Commercial Aviation Risk Assessment — Executive Dashboard</div>
+  </div>
+  <div class="header-right">
+    <div class="threat-badge">
+      <div class="threat-dot"></div>
+      <div class="threat-label">Elevated</div>
+    </div>
+    <div class="header-date">
+      <div><span>Report Date:</span> 25 FEB 2026</div>
+      <div><span>Next Update:</span> MAY 2026</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ DASHBOARD ═══════ -->
+<div class="dashboard">
+
+  <!-- ── ROW 1: Key Stats ── -->
+  <div class="stat-row fade-in">
+    <div class="stat-card red">
+      <div class="stat-label">Total Incidents (2006–2025)</div>
+      <div class="stat-value red">648 <a class="cite" href="https://www.faa.gov/hazmat/resources/lithium_batteries/incidents" target="_blank" title="FAA Lithium Battery Incident Database">[1]</a></div>
+      <div class="stat-detail"><span class="up">+388%</span> since 2015 <a class="cite" href="https://simpleflying.com/faa-reports-surge-lithium-battery-fires-us-flights/" target="_blank" title="Simple Flying: FAA Reports 388% Surge">[2]</a></div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-label">Current Rate</div>
+      <div class="stat-value orange">~2/wk <a class="cite" href="https://ulse.org/insight/li-ion-incidents-aviation-2024-data-review/" target="_blank" title="UL TRIP 2024 Data Review">[3]</a></div>
+      <div class="stat-detail"><span class="up">+16%</span> YoY (2024) <a class="cite" href="https://www.lion.com/lion-news/may-2025/lithium-battery-air-incidents-up-16-in-2024" target="_blank" title="Lion Technology">[4]</a></div>
+    </div>
+    <div class="stat-card yellow">
+      <div class="stat-label">2024 Incidents</div>
+      <div class="stat-value" style="color:var(--yellow)">89 <a class="cite" href="https://www.faa.gov/hazmat/resources/lithium_batteries/incidents" target="_blank" title="FAA Incident Database">[1]</a></div>
+      <div class="stat-detail">Record year | <span class="up">18%</span> caused disruption <a class="cite" href="https://ulse.org/insight/li-ion-incidents-aviation-2024-data-review/" target="_blank" title="UL TRIP 2024 Data Review">[3]</a></div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-label">Passenger Non-Compliance</div>
+      <div class="stat-value blue">38% <a class="cite" href="https://ulse.org/news/new-data-battery-incidents-aircraft-rose-15-over-five-years/" target="_blank" title="UL Standards & Engagement">[5]</a></div>
+      <div class="stat-detail">Put lithium devices in checked bags</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">Regulatory Changes</div>
+      <div class="stat-value green">4</div>
+      <div class="stat-detail">In last 12 months</div>
+    </div>
+  </div>
+
+  <!-- ── ROW 2: Top 3 Leading Indicators ── -->
+  <div class="alert-strip fade-in">
+    <div class="alert-card border-red">
+      <div class="alert-num">Indicator #1</div>
+      <h3 class="red">Vape Market Expansion</h3>
+      <p>Disposable vapes surging despite bans. "10,000+ puff" models use larger cells (up to 50 Wh). #1 incident category at 35%. <a class="cite" href="https://www.faa.gov/hazmat/resources/lithium_batteries/incidents" target="_blank">[1]</a></p>
+      <span class="trend-tag rising">RISING</span>
+    </div>
+    <div class="alert-card border-red">
+      <div class="alert-num">Indicator #2</div>
+      <h3 class="red">Power Bank Price Collapse</h3>
+      <p>20K+ mAh power banks at $6–8 on Temu. ASP down >25% in 12 months. March 2025 checked-bag ban hasn't slowed demand. <a class="cite" href="https://www.faa.gov/hazmat/packsafe/lithium-batteries" target="_blank">[6]</a></p>
+      <span class="trend-tag rising">RISING</span>
+    </div>
+    <div class="alert-card border-red">
+      <div class="alert-num">Indicator #3</div>
+      <h3 class="orange">Undeclared E-Commerce Cargo</h3>
+      <p>Cross-border parcels from Temu/Shein/AliExpress routinely carry undeclared lithium batteries. PHMSA enforcement up 40% YoY. <a class="cite" href="https://www.phmsa.dot.gov/lithiumbatteries" target="_blank">[7]</a></p>
+      <span class="trend-tag rising">RISING</span>
+    </div>
+  </div>
+
+  <!-- ── EMERGING PRODUCTS & WATCH LIST ── -->
+  <div class="card two-col fade-in">
+    <div class="card-title"><span class="icon">&#9888;</span> Emerging Products — Watch List</div>
+    <div class="emerging-grid">
+      <div class="emerging-item">
+        <div class="em-header">
+          <h4 style="color:var(--red)">Sodium-Ion Batteries</h4>
+          <span class="em-wh">100–160 Wh/kg</span>
+        </div>
+        <div class="em-reason">NOT classified under lithium battery rules. No UN number, no packing instructions, no Wh thresholds. Consumer products entering market 2026.</div>
+        <span class="em-tag gap">REGULATORY GAP</span>
+      </div>
+      <div class="emerging-item">
+        <div class="em-header">
+          <h4 style="color:var(--orange)">Portable Power Stations</h4>
+          <span class="em-wh">500–6,000 Wh</span>
+        </div>
+        <div class="em-reason">Jackery/EcoFlow marketed as "travel essentials" despite being PROHIBITED. Smaller 256 Wh units hard to distinguish from large power banks at screening.</div>
+        <span class="em-tag prohibited">PROHIBITED</span>
+      </div>
+      <div class="emerging-item">
+        <div class="em-header">
+          <h4 style="color:var(--yellow)">Solid-State Batteries</h4>
+          <span class="em-wh">400–500 Wh/kg</span>
+        </div>
+        <div class="em-reason">Samsung SDI / Toyota targeting 2026–2028. Different failure modes — current UN 38.3 tests may not capture them.</div>
+        <span class="em-tag new-chem">NEW CHEMISTRY</span>
+      </div>
+      <div class="emerging-item">
+        <div class="em-header">
+          <h4 style="color:var(--orange)">E-Foils / Hydrofoils</h4>
+          <span class="em-wh">2,000–3,500 Wh</span>
+        </div>
+        <div class="em-reason">Wealthy coastal travelers. 2,000+ Wh batteries far exceed all thresholds. Attempted as "sporting equipment."</div>
+        <span class="em-tag prohibited">PROHIBITED</span>
+      </div>
+      <div class="emerging-item">
+        <div class="em-header">
+          <h4 style="color:var(--yellow)">AI Wearables</h4>
+          <span class="em-wh">5–30 Wh</span>
+        </div>
+        <div class="em-reason">Meta Orion AR glasses (2027), AI smartwatches. Always-on AI processing demands larger batteries in small form factors.</div>
+        <span class="em-tag monitor">MONITOR</span>
+      </div>
+      <div class="emerging-item">
+        <div class="em-header">
+          <h4 style="color:var(--green)">Smart Rings</h4>
+          <span class="em-wh">&lt;0.1 Wh</span>
+        </div>
+        <div class="em-reason">Oura, Samsung Galaxy Ring — 30M+ units by 2028. Negligible energy but zero Wh labeling. Growing awareness gap.</div>
+        <span class="em-tag low">LOW RISK</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── REGULATORY GAP FLAGS ── -->
+  <div class="card fade-in">
+    <div class="card-title"><span class="icon">&#9873;</span> Regulatory Gap Flags</div>
+    <div class="gap-item">
+      <div class="gap-icon red">&#9889;</div>
+      <div class="gap-content">
+        <h4 style="color:var(--red)">Sodium-Ion Unregulated</h4>
+        <p>49 CFR 173.185 applies only to "lithium" batteries. Na-ion products have no UN number, no PI, no Wh thresholds for air transport. <a class="cite" href="https://www.ecfr.gov/current/title-49/subtitle-B/chapter-I/subchapter-C/part-173/subpart-E/section-173.185" target="_blank">[8]</a></p>
+      </div>
+    </div>
+    <div class="gap-item">
+      <div class="gap-icon orange">&#9670;</div>
+      <div class="gap-content">
+        <h4 style="color:var(--orange)">Cordless Hair Tools — No Labels</h4>
+        <p>Rapidly growing category. Many products exceed 100 Wh but lack Wh labels. Passengers can't determine compliance.</p>
+      </div>
+    </div>
+    <div class="gap-item">
+      <div class="gap-icon orange">&#9670;</div>
+      <div class="gap-content">
+        <h4 style="color:var(--orange)">Power Stations as "Travel Gear"</h4>
+        <p>500–2,000 Wh products marketed for travel despite being prohibited. 256 Wh units resemble large power banks at screening.</p>
+      </div>
+    </div>
+    <div class="gap-item">
+      <div class="gap-icon yellow">&#9679;</div>
+      <div class="gap-content">
+        <h4 style="color:var(--yellow)">Heated Medical Bags — Unclear</h4>
+        <p>Battery-heated medication transport bags occupy ambiguous regulatory space. No specific exemption or guidance exists.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── THREAT MATRIX ── -->
+  <div class="card threat-matrix fade-in">
+    <div class="card-title"><span class="icon">&#9632;</span> Product Risk Matrix — Leading Indicator Scorecard</div>
+    <table class="matrix-table">
+      <thead>
+        <tr>
+          <th style="width:160px">Product</th>
+          <th>Demand</th>
+          <th>Price</th>
+          <th>Energy</th>
+          <th>Size</th>
+          <th>Import</th>
+          <th>Carry-On</th>
+          <th>Checked</th>
+          <th style="width:80px">Posture</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="9" class="tier-label" style="color:var(--red)">Tier 1 — High Risk</td></tr>
+        <tr>
+          <td>E-Cigarettes / Vapes</td>
+          <td><span class="sig H">H</span></td>
+          <td><span class="sig H">H</span></td>
+          <td><span class="sig M">M</span></td>
+          <td><span class="sig L">L</span></td>
+          <td><span class="sig H">H</span></td>
+          <td style="font-size:11px;color:var(--green)">&#10003;</td>
+          <td style="font-size:11px;color:var(--red)">&#10007;</td>
+          <td><span class="posture red">RED</span></td>
+        </tr>
+        <tr>
+          <td>Power Banks</td>
+          <td><span class="sig H">H</span></td>
+          <td><span class="sig H">H</span></td>
+          <td><span class="sig M">M</span></td>
+          <td><span class="sig M">M</span></td>
+          <td><span class="sig H">H</span></td>
+          <td style="font-size:11px;color:var(--green)">&#10003;</td>
+          <td style="font-size:11px;color:var(--red)">&#10007;</td>
+          <td><span class="posture red">RED</span></td>
+        </tr>
+        <tr>
+          <td>E-Bikes / E-Scooters</td>
+          <td><span class="sig M">M</span></td>
+          <td><span class="sig M">M</span></td>
+          <td><span class="sig M">M</span></td>
+          <td><span class="sig L">L</span></td>
+          <td><span class="sig M">M</span></td>
+          <td style="font-size:11px;color:var(--red)">BANNED</td>
+          <td style="font-size:11px;color:var(--red)">BANNED</td>
+          <td><span class="posture red">RED</span></td>
+        </tr>
+        <tr>
+          <td>Drones / UAVs</td>
+          <td><span class="sig M">M</span></td>
+          <td><span class="sig M">M</span></td>
+          <td><span class="sig H">H</span></td>
+          <td><span class="sig M">M</span></td>
+          <td><span class="sig M">M</span></td>
+          <td style="font-size:11px;color:var(--green)">&#10003;</td>
+          <td style="font-size:11px;color:var(--red)">&#10007;</td>
+          <td><span class="posture orange">ORANGE</span></td>
+        </tr>
+        <tr><td colspan="9" class="tier-label" style="color:var(--orange)">Tier 2 — Medium-High Risk</td></tr>
+        <tr>
+          <td>Wireless Earbuds</td>
+          <td><span class="sig H">H</span></td>
+          <td><span class="sig H">H</span></td>
+          <td><span class="sig L">L</span></td>
+          <td><span class="sig L">L</span></td>
+          <td><span class="sig H">H</span></td>
+          <td style="font-size:11px;color:var(--green)">&#10003;</td>
+          <td style="font-size:11px;color:var(--green)">&#10003;</td>
+          <td><span class="posture orange">ORANGE</span></td>
+        </tr>
+        <tr>
+          <td>Bluetooth Speakers</td>
+          <td><span class="sig M">M</span></td>
+          <td><span class="sig H">H</span></td>
+          <td><span class="sig L">L</span></td>
+          <td><span class="sig L">L</span></td>
+          <td><span class="sig H">H</span></td>
+          <td style="font-size:11px;color:var(--green)">&#10003;</td>
+          <td style="font-size:11px;color:var(--green)">&#10003;</td>
+          <td><span class="posture orange">ORANGE</span></td>
+        </tr>
+        <tr>
+          <td>Portable Gaming</td>
+          <td><span class="sig M">M</span></td>
+          <td><span class="sig L">L</span></td>
+          <td><span class="sig M">M</span></td>
+          <td><span class="sig L">L</span></td>
+          <td><span class="sig L">L</span></td>
+          <td style="font-size:11px;color:var(--green)">&#10003;</td>
+          <td style="font-size:11px;color:var(--green)">&#10003;</td>
+          <td><span class="posture yellow">YELLOW</span></td>
+        </tr>
+        <tr>
+          <td>Cordless Hair Tools</td>
+          <td><span class="sig H">H</span></td>
+          <td><span class="sig M">M</span></td>
+          <td><span class="sig H">H</span></td>
+          <td><span class="sig M">M</span></td>
+          <td><span class="sig M">M</span></td>
+          <td style="font-size:11px;color:var(--yellow)">VARIES</td>
+          <td style="font-size:11px;color:var(--yellow)">VARIES</td>
+          <td><span class="posture orange">ORANGE</span></td>
+        </tr>
+        <tr><td colspan="9" class="tier-label" style="color:var(--yellow)">Tier 3 — Medium Risk</td></tr>
+        <tr>
+          <td>Portable Fans</td>
+          <td><span class="sig M">M</span></td>
+          <td><span class="sig H">H</span></td>
+          <td><span class="sig L">L</span></td>
+          <td><span class="sig M">M</span></td>
+          <td><span class="sig H">H</span></td>
+          <td style="font-size:11px;color:var(--green)">&#10003;</td>
+          <td style="font-size:11px;color:var(--green)">&#10003;</td>
+          <td><span class="posture yellow">YELLOW</span></td>
+        </tr>
+        <tr>
+          <td>Heated Clothing</td>
+          <td><span class="sig M">M</span></td>
+          <td><span class="sig M">M</span></td>
+          <td><span class="sig L">L</span></td>
+          <td><span class="sig L">L</span></td>
+          <td><span class="sig M">M</span></td>
+          <td style="font-size:11px;color:var(--green)">&#10003;</td>
+          <td style="font-size:11px;color:var(--green)">&#10003;</td>
+          <td><span class="posture yellow">YELLOW</span></td>
+        </tr>
+        <tr>
+          <td>Cordless Power Tools</td>
+          <td><span class="sig M">M</span></td>
+          <td><span class="sig L">L</span></td>
+          <td><span class="sig H">H</span></td>
+          <td><span class="sig L">L</span></td>
+          <td><span class="sig M">M</span></td>
+          <td style="font-size:11px;color:var(--yellow)">VARIES</td>
+          <td style="font-size:11px;color:var(--red)">&#10007;</td>
+          <td><span class="posture yellow">YELLOW</span></td>
+        </tr>
+        <tr>
+          <td>Smart Luggage</td>
+          <td><span class="sig L">L</span></td>
+          <td><span class="sig M">M</span></td>
+          <td><span class="sig L">L</span></td>
+          <td><span class="sig L">L</span></td>
+          <td><span class="sig L">L</span></td>
+          <td style="font-size:11px;color:var(--green)">&#10003;</td>
+          <td style="font-size:11px;color:var(--yellow)">REMOVE</td>
+          <td><span class="posture green">GREEN</span></td>
+        </tr>
+        <tr>
+          <td>Mobility Devices</td>
+          <td><span class="sig L">L</span></td>
+          <td><span class="sig L">L</span></td>
+          <td><span class="sig M">M</span></td>
+          <td><span class="sig L">L</span></td>
+          <td><span class="sig L">L</span></td>
+          <td style="font-size:11px;color:var(--text-muted)">N/A</td>
+          <td style="font-size:11px;color:var(--green)">14 CFR 382</td>
+          <td><span class="posture green">GREEN</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── RIGHT COLUMN: PRICE COLLAPSE + BANNED ── -->
+  <div class="card fade-in">
+    <div class="card-title"><span class="icon">&#8595;</span> Price Collapse Tracker</div>
+    <table class="price-table">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>ASP</th>
+          <th>12mo</th>
+          <th>Quality Floor</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="color:var(--text-primary)">Power Banks (20K mAh)</td>
+          <td>$18.50</td>
+          <td class="price-drop">-28%</td>
+          <td><span class="price-floor breached">BELOW</span></td>
+        </tr>
+        <tr>
+          <td style="color:var(--text-primary)">Wireless Earbuds</td>
+          <td>$12.20</td>
+          <td class="price-drop">-35%</td>
+          <td><span class="price-floor breached">BELOW</span></td>
+        </tr>
+        <tr>
+          <td style="color:var(--text-primary)">Portable Fans</td>
+          <td>$9.80</td>
+          <td class="price-drop">-22%</td>
+          <td><span class="price-floor breached">BELOW</span></td>
+        </tr>
+        <tr>
+          <td style="color:var(--text-primary)">Cordless Hair Tools</td>
+          <td>$35.00</td>
+          <td class="price-drop">-15%</td>
+          <td><span class="price-floor breached">BELOW</span></td>
+        </tr>
+        <tr>
+          <td style="color:var(--text-primary)">Bluetooth Speakers</td>
+          <td>$24.50</td>
+          <td class="price-drop">-12%</td>
+          <td><span class="price-floor breached">BELOW</span></td>
+        </tr>
+        <tr>
+          <td style="color:var(--text-primary)">Disposable Vapes</td>
+          <td>$4.50</td>
+          <td class="price-drop">-18%</td>
+          <td><span class="price-floor breached">BELOW</span></td>
+        </tr>
+        <tr>
+          <td style="color:var(--text-primary)">Drone Batteries</td>
+          <td>$28.00</td>
+          <td style="color:var(--text-muted)">-5%</td>
+          <td><span class="price-floor ok">OK</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="margin-top:12px;padding:10px;background:var(--red-bg);border:1px solid var(--red-border);border-radius:8px;">
+      <div style="font-size:11px;font-weight:600;color:var(--red);margin-bottom:4px;">KEY FINDING</div>
+      <div style="font-size:12px;color:var(--text-secondary);line-height:1.4;">6 of 7 tracked categories are selling <strong style="color:var(--text-primary)">below the cost-of-quality floor</strong> — the price at which adequate BMS, quality cells, and safety certifications are not economically viable.</div>
+    </div>
+  </div>
+
+  <!-- ── INCIDENT TREND ── -->
+  <div class="card two-col fade-in">
+    <div class="card-title"><span class="icon">&#9650;</span> Annual Incident Trend <a class="cite" href="https://www.faa.gov/hazmat/resources/lithium_batteries/incidents" target="_blank" title="FAA Lithium Battery Incident Database">[1]</a></div>
+    <div class="chart-area">
+      <div class="bar-chart">
+        <div class="bar-col">
+          <div class="bar-value">16</div>
+          <div class="bar blue-bar" style="height:18px"></div>
+          <div class="bar-label">2015</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-value">31</div>
+          <div class="bar blue-bar" style="height:35px"></div>
+          <div class="bar-label">2016</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-value">46</div>
+          <div class="bar blue-bar" style="height:52px"></div>
+          <div class="bar-label">2017</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-value">42</div>
+          <div class="bar blue-bar" style="height:48px"></div>
+          <div class="bar-label">2018</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-value">54</div>
+          <div class="bar orange-bar" style="height:61px"></div>
+          <div class="bar-label">2019</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-value">48</div>
+          <div class="bar orange-bar" style="height:54px"></div>
+          <div class="bar-label">2020</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-value">62</div>
+          <div class="bar orange-bar" style="height:70px"></div>
+          <div class="bar-label">2021</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-value">68</div>
+          <div class="bar orange-bar" style="height:77px"></div>
+          <div class="bar-label">2022</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-value">72</div>
+          <div class="bar orange-bar" style="height:81px"></div>
+          <div class="bar-label">2023</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-value">89</div>
+          <div class="bar red-bar" style="height:100px"></div>
+          <div class="bar-label">2024</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-value" style="color:var(--red)">~100</div>
+          <div class="bar red-bar" style="height:113px;opacity:0.7;border:1px dashed var(--red);background:repeating-linear-gradient(45deg,transparent,transparent 3px,rgba(239,68,68,0.3) 3px,rgba(239,68,68,0.3) 6px)"></div>
+          <div class="bar-label">2025e</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DEVICE CATEGORY BREAKDOWN ── -->
+  <div class="card fade-in">
+    <div class="card-title"><span class="icon">&#9638;</span> Incident Breakdown by Device <a class="cite" href="https://www.faa.gov/hazmat/resources/lithium_batteries/incidents" target="_blank">[1]</a> <a class="cite" href="https://ulse.org/insight/li-ion-incidents-aviation-2024-data-review/" target="_blank">[3]</a></div>
+    <div class="device-bars">
+      <div class="device-row">
+        <div class="device-name">Vapes</div>
+        <div class="device-bar-track">
+          <div class="device-bar-fill" style="width:35%;background:linear-gradient(90deg,rgba(239,68,68,0.8),var(--red))"><span>35%</span></div>
+        </div>
+      </div>
+      <div class="device-row">
+        <div class="device-name">Power Banks</div>
+        <div class="device-bar-track">
+          <div class="device-bar-fill" style="width:16%;background:linear-gradient(90deg,rgba(249,115,22,0.8),var(--orange))"><span>16%</span></div>
+        </div>
+      </div>
+      <div class="device-row">
+        <div class="device-name">Cell Phones</div>
+        <div class="device-bar-track">
+          <div class="device-bar-fill" style="width:14%;background:linear-gradient(90deg,rgba(234,179,8,0.6),var(--yellow))"><span>14%</span></div>
+        </div>
+      </div>
+      <div class="device-row">
+        <div class="device-name">Laptops</div>
+        <div class="device-bar-track">
+          <div class="device-bar-fill" style="width:12%;background:linear-gradient(90deg,rgba(59,130,246,0.6),var(--blue))"><span>12%</span></div>
+        </div>
+      </div>
+      <div class="device-row">
+        <div class="device-name">Spare Cells</div>
+        <div class="device-bar-track">
+          <div class="device-bar-fill" style="width:6%;background:linear-gradient(90deg,rgba(100,116,139,0.6),var(--text-muted))"><span>6%</span></div>
+        </div>
+      </div>
+      <div class="device-row">
+        <div class="device-name">Drones</div>
+        <div class="device-bar-track">
+          <div class="device-bar-fill" style="width:5%;background:linear-gradient(90deg,rgba(100,116,139,0.5),var(--text-muted))"><span>5%</span></div>
+        </div>
+      </div>
+      <div class="device-row">
+        <div class="device-name">Other</div>
+        <div class="device-bar-track">
+          <div class="device-bar-fill" style="width:12%;background:linear-gradient(90deg,rgba(139,92,246,0.5),#a78bfa)"><span>12%</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:12px;font-size:11px;color:var(--text-muted);font-style:italic;">"Other" is the fastest-growing category — driven by proliferation of new battery device types.</div>
+  </div>
+
+  <!-- ── COMPLIANCE GAMING ── -->
+  <div class="card fade-in">
+    <div class="card-title"><span class="icon">&#9888;</span> Compliance Gaming — The 99 Wh Pattern</div>
+    <p style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;line-height:1.5;">Products deliberately engineered to <strong style="color:var(--text-primary)">99.16 Wh</strong> — just under the 100 Wh threshold. The math: <span style="font-family:'JetBrains Mono';font-size:11px;color:var(--accent)">26,800 mAh × 3.7V ÷ 1,000 = 99.16 Wh</span></p>
+    <div class="gaming-bar">
+      <span style="font-size:11px;color:var(--text-muted);width:75px;flex-shrink:0">Power Bank</span>
+      <div class="gaming-track">
+        <div class="gaming-fill" style="width:99.16%"><span>99.16</span></div>
+        <div class="gaming-threshold" style="left:100%"></div>
+      </div>
+    </div>
+    <div class="gaming-bar">
+      <span style="font-size:11px;color:var(--text-muted);width:75px;flex-shrink:0">Hair Tool</span>
+      <div class="gaming-track">
+        <div class="gaming-fill" style="width:99.16%"><span>99.16</span></div>
+        <div class="gaming-threshold" style="left:100%"></div>
+      </div>
+    </div>
+    <div class="gaming-bar">
+      <span style="font-size:11px;color:var(--text-muted);width:75px;flex-shrink:0">Speaker</span>
+      <div class="gaming-track">
+        <div class="gaming-fill" style="width:98.05%"><span>98.05</span></div>
+        <div class="gaming-threshold" style="left:100%"></div>
+      </div>
+    </div>
+    <div style="margin-top:10px;padding:8px;background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:6px;font-size:11px;color:var(--orange);line-height:1.4;">
+      <strong>Risk:</strong> Manufacturing variance of 1–2% could push "99 Wh" products over the threshold. No verification mechanism exists at screening.
+    </div>
+  </div>
+
+  <!-- ── BANNED ITEMS ── -->
+  <div class="card fade-in">
+    <div class="card-title"><span class="icon" style="color:var(--red)">&#10007;</span> Banned from All US Commercial Flights <a class="cite" href="https://www.faa.gov/hazmat/packsafe/portable-recreational-vehicles" target="_blank">[6]</a> <a class="cite" href="https://www.ecfr.gov/current/title-49/subtitle-B/chapter-I/subchapter-C/part-173/subpart-E/section-173.185" target="_blank">[8]</a></div>
+    <ul class="banned-list">
+      <li>
+        <div class="banned-icon">&#9889;</div>
+        <div>
+          <div>Hoverboards / Self-Balancing Scooters</div>
+          <div class="banned-detail">100–200+ Wh | All US airlines | Extensive fire history</div>
+        </div>
+      </li>
+      <li>
+        <div class="banned-icon">&#9889;</div>
+        <div>
+          <div>E-Scooters (whole device)</div>
+          <div class="banned-detail">250–750+ Wh | All US airlines | Battery exceeds all thresholds</div>
+        </div>
+      </li>
+      <li>
+        <div class="banned-icon">&#9889;</div>
+        <div>
+          <div>E-Bikes (whole device)</div>
+          <div class="banned-detail">300–750+ Wh | All US airlines | Battery only if removed & ≤160 Wh</div>
+        </div>
+      </li>
+      <li>
+        <div class="banned-icon">&#9889;</div>
+        <div>
+          <div>Samsung Galaxy Note 7</div>
+          <div class="banned-detail">~13 Wh | DOT Emergency Order (Oct 2016, still active)</div>
+        </div>
+      </li>
+      <li>
+        <div class="banned-icon">&#9889;</div>
+        <div>
+          <div>Portable Power Stations</div>
+          <div class="banned-detail">500–6,000+ Wh | Jackery, EcoFlow, Bluetti | Exceeds 160 Wh</div>
+        </div>
+      </li>
+      <li>
+        <div class="banned-icon">&#9889;</div>
+        <div>
+          <div>All CPSC-Recalled Battery Products</div>
+          <div class="banned-detail">Varies | 49 CFR 173.185(f) | Any active recall for fire risk</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ── SEASONAL RISK CALENDAR ── -->
+  <div class="card full-width fade-in">
+    <div class="card-title"><span class="icon">&#9734;</span> Seasonal Risk Calendar — 2026</div>
+    <div class="season-grid">
+      <div class="season-cell s-mod"><span class="month">Jan</span>CES</div>
+      <div class="season-cell s-mod"><span class="month">Feb</span>Samsung</div>
+      <div class="season-cell s-mod-high"><span class="month">Mar</span>Spring</div>
+      <div class="season-cell s-mod"><span class="month">Apr</span>Steady</div>
+      <div class="season-cell s-mod"><span class="month">May</span>Steady</div>
+      <div class="season-cell s-high"><span class="month">Jun</span>Peak</div>
+      <div class="season-cell s-high"><span class="month">Jul</span>Peak</div>
+      <div class="season-cell s-high"><span class="month">Aug</span>Peak</div>
+      <div class="season-cell s-high"><span class="month">Sep</span>Apple</div>
+      <div class="season-cell s-mod-high"><span class="month">Oct</span>Prime</div>
+      <div class="season-cell s-high"><span class="month">Nov</span>BF/CM</div>
+      <div class="season-cell s-highest"><span class="month">Dec</span>PEAK</div>
+    </div>
+    <div style="display:flex;gap:16px;margin-top:10px;font-size:11px;color:var(--text-muted);">
+      <span><span style="display:inline-block;width:10px;height:10px;background:var(--yellow-bg);border:1px solid var(--yellow-border);border-radius:2px;margin-right:4px;vertical-align:middle"></span>Moderate</span>
+      <span><span style="display:inline-block;width:10px;height:10px;background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:2px;margin-right:4px;vertical-align:middle"></span>Elevated</span>
+      <span><span style="display:inline-block;width:10px;height:10px;background:var(--red-bg);border:1px solid var(--red-border);border-radius:2px;margin-right:4px;vertical-align:middle"></span>High</span>
+      <span><span style="display:inline-block;width:10px;height:10px;background:rgba(239,68,68,0.22);border:1px solid rgba(239,68,68,0.5);border-radius:2px;margin-right:4px;vertical-align:middle"></span>Highest</span>
+    </div>
+  </div>
+
+  <!-- ── PRIORITY ACTIONS ── -->
+  <div class="card two-col fade-in">
+    <div class="card-title"><span class="icon">&#10148;</span> Priority Actions for Decision-Makers</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:8px;">Immediate (0–90 Days)</div>
+        <ol class="action-list">
+          <li><span class="action-num">01</span><span class="action-text"><strong>Close sodium-ion gap</strong> — Issue guidance before consumer products hit mass market</span></li>
+          <li><span class="action-num">02</span><span class="action-text"><strong>Require Wh labeling</strong> on all lithium battery products sold in the US</span></li>
+          <li><span class="action-num">03</span><span class="action-text"><strong>Update crew training</strong> for new product categories (hair tools, heated clothing, portable fans)</span></li>
+          <li><span class="action-num">04</span><span class="action-text"><strong>Enhanced e-commerce screening</strong> for undeclared batteries from China-based platforms</span></li>
+        </ol>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--orange);margin-bottom:8px;">Near-Term (90–365 Days)</div>
+        <ol class="action-list">
+          <li><span class="action-num">05</span><span class="action-text"><strong>Address 99 Wh gaming</strong> — Verify tested vs. nominal capacity at threshold</span></li>
+          <li><span class="action-num">06</span><span class="action-text"><strong>SoC spot-check capability</strong> for 30% mandate cargo compliance</span></li>
+          <li><span class="action-num">07</span><span class="action-text"><strong>Product-specific passenger guidance</strong> for cordless hair tools, heated clothing, fans</span></li>
+          <li><span class="action-num">08</span><span class="action-text"><strong>Fund independent testing</strong> of ultra-cheap e-commerce battery products</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RECENT REGULATORY TIMELINE ── -->
+  <div class="card fade-in">
+    <div class="card-title"><span class="icon">&#9998;</span> Regulatory Timeline</div>
+    <div style="position:relative;padding-left:16px;border-left:2px solid var(--border);">
+      <div style="padding:8px 0 16px;">
+        <div style="font-family:'JetBrains Mono';font-size:10px;color:var(--green);font-weight:600;">JAN 2026</div>
+        <div style="font-size:12px;color:var(--text-primary);font-weight:500;"><a href="https://www.lion.com/lion-news/december-2025/new-lithium-battery-state-of-charge-limit-in-effect-jan-1" target="_blank" style="color:var(--text-primary);text-decoration:none;border-bottom:1px dotted var(--accent);">30% SoC Mandate Active</a></div>
+        <div style="font-size:11px;color:var(--text-muted);">Cargo Li-ion (UN 3480 Sec II)</div>
+      </div>
+      <div style="padding:8px 0 16px;">
+        <div style="font-family:'JetBrains Mono';font-size:10px;color:var(--blue);font-weight:600;">AUG 2025</div>
+        <div style="font-size:12px;color:var(--text-primary);font-weight:500;"><a href="https://www.faa.gov/other_visit/aviation_industry/airline_operators/airline_safety/safo/all_safos/SAFO25002.pdf" target="_blank" style="color:var(--text-primary);text-decoration:none;border-bottom:1px dotted var(--accent);">FAA SAFO 25002</a></div>
+        <div style="font-size:11px;color:var(--text-muted);">Lithium battery risk mitigation</div>
+      </div>
+      <div style="padding:8px 0 16px;">
+        <div style="font-family:'JetBrains Mono';font-size:10px;color:var(--orange);font-weight:600;">MAR 2025</div>
+        <div style="font-size:12px;color:var(--text-primary);font-weight:500;"><a href="https://www.faa.gov/hazmat/packsafe/lithium-batteries" target="_blank" style="color:var(--text-primary);text-decoration:none;border-bottom:1px dotted var(--accent);">Power Bank Checked Bag Ban</a></div>
+        <div style="font-size:11px;color:var(--text-muted);">All Wh ratings, all US flights</div>
+      </div>
+      <div style="padding:8px 0 0;">
+        <div style="font-family:'JetBrains Mono';font-size:10px;color:var(--accent);font-weight:600;">JAN 2026</div>
+        <div style="font-size:12px;color:var(--text-primary);font-weight:500;"><a href="https://www.iata.org/contentassets/05e6d8742b0047259bf3a700bc9d42b9/lithium-battery-guidance-document.pdf" target="_blank" style="color:var(--text-primary);text-decoration:none;border-bottom:1px dotted var(--accent);">IATA DGR 67th Edition</a></div>
+        <div style="font-size:11px;color:var(--text-muted);">Enhanced SoC + labeling rules</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SOURCES PANEL ── -->
+  <div class="sources-panel fade-in">
+    <div class="card-title"><span class="icon">&#9881;</span> Data Sources & Citations</div>
+    <div class="sources-grid">
+      <div class="source-item">
+        <span class="source-num">[1]</span>
+        <div class="source-detail">
+          <span class="source-name">FAA Lithium Battery Incident Database</span><br>
+          <a href="https://www.faa.gov/hazmat/resources/lithium_batteries/incidents" target="_blank">faa.gov/hazmat/.../incidents</a> — Updated quarterly
+        </div>
+      </div>
+      <div class="source-item">
+        <span class="source-num">[2]</span>
+        <div class="source-detail">
+          <span class="source-name">Simple Flying — 388% Surge Report</span><br>
+          <a href="https://simpleflying.com/faa-reports-surge-lithium-battery-fires-us-flights/" target="_blank">simpleflying.com/...surge</a>
+        </div>
+      </div>
+      <div class="source-item">
+        <span class="source-num">[3]</span>
+        <div class="source-detail">
+          <span class="source-name">UL TRIP — 2024 Aviation Data Review</span><br>
+          <a href="https://ulse.org/insight/li-ion-incidents-aviation-2024-data-review/" target="_blank">ulse.org/.../2024-data-review</a> — 37 airlines
+        </div>
+      </div>
+      <div class="source-item">
+        <span class="source-num">[4]</span>
+        <div class="source-detail">
+          <span class="source-name">Lion Technology — Incidents Up 16%</span><br>
+          <a href="https://www.lion.com/lion-news/may-2025/lithium-battery-air-incidents-up-16-in-2024" target="_blank">lion.com/.../up-16-in-2024</a>
+        </div>
+      </div>
+      <div class="source-item">
+        <span class="source-num">[5]</span>
+        <div class="source-detail">
+          <span class="source-name">UL Standards — Incidents Rose 15% Over 5 Years</span><br>
+          <a href="https://ulse.org/news/new-data-battery-incidents-aircraft-rose-15-over-five-years/" target="_blank">ulse.org/.../rose-15-over-five-years</a>
+        </div>
+      </div>
+      <div class="source-item">
+        <span class="source-num">[6]</span>
+        <div class="source-detail">
+          <span class="source-name">FAA PackSafe — Lithium Batteries</span><br>
+          <a href="https://www.faa.gov/hazmat/packsafe/lithium-batteries" target="_blank">faa.gov/hazmat/packsafe/lithium-batteries</a>
+        </div>
+      </div>
+      <div class="source-item">
+        <span class="source-num">[7]</span>
+        <div class="source-detail">
+          <span class="source-name">PHMSA — Lithium Batteries</span><br>
+          <a href="https://www.phmsa.dot.gov/lithiumbatteries" target="_blank">phmsa.dot.gov/lithiumbatteries</a>
+        </div>
+      </div>
+      <div class="source-item">
+        <span class="source-num">[8]</span>
+        <div class="source-detail">
+          <span class="source-name">49 CFR 173.185 — eCFR</span><br>
+          <a href="https://www.ecfr.gov/current/title-49/subtitle-B/chapter-I/subchapter-C/part-173/subpart-E/section-173.185" target="_blank">ecfr.gov/.../section-173.185</a>
+        </div>
+      </div>
+      <div class="source-item">
+        <span class="source-num">[9]</span>
+        <div class="source-detail">
+          <span class="source-name">FAA SAFO 25002 (PDF)</span><br>
+          <a href="https://www.faa.gov/other_visit/aviation_industry/airline_operators/airline_safety/safo/all_safos/SAFO25002.pdf" target="_blank">faa.gov/.../SAFO25002.pdf</a>
+        </div>
+      </div>
+      <div class="source-item">
+        <span class="source-num">[10]</span>
+        <div class="source-detail">
+          <span class="source-name">IATA DGR 67th Ed. Guidance (PDF)</span><br>
+          <a href="https://www.iata.org/contentassets/05e6d8742b0047259bf3a700bc9d42b9/lithium-battery-guidance-document.pdf" target="_blank">iata.org/.../guidance-document.pdf</a>
+        </div>
+      </div>
+      <div class="source-item">
+        <span class="source-num">[11]</span>
+        <div class="source-detail">
+          <span class="source-name">14 CFR 382 — Mobility Devices (eCFR)</span><br>
+          <a href="https://www.ecfr.gov/current/title-14/chapter-II/subchapter-D/part-382/subpart-I" target="_blank">ecfr.gov/.../part-382/subpart-I</a>
+        </div>
+      </div>
+      <div class="source-item">
+        <span class="source-num">[12]</span>
+        <div class="source-detail">
+          <span class="source-name">FAA Tech Center Report DOT/FAA/TC-24-39</span><br>
+          <a href="https://www.fire.tc.faa.gov/pdf/tc24-39.pdf" target="_blank">fire.tc.faa.gov/pdf/tc24-39.pdf</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FOOTER ── -->
+  <div class="footer">
+    <span>Lithium Battery Leading Indicators Report</span> | Prepared by Frank B. Meyers, JD | February 25, 2026 | Next Update: May 2026
+    <br>Sources: FAA Incident Database, UL TRIP, NTSB CAROL, 49 CFR 173.185, 14 CFR 382, IATA DGR 67th Ed.
+  </div>
+
+</div>
+
+</body>
+</html>
